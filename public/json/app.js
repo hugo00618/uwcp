@@ -28,7 +28,7 @@ var places = {
     "finch": { "placeCode": "finch", "areaCode": "nyk" },
     "fairview": { "placeCode": "fvm", "areaCode": "nyk" },
     "gta": { "placeCode": "gta", "areaCode": "gta" },
-    // "loo": { "placeCode": "wat", "areaCode": "wat" },
+    "loo": { "placeCode": "wat", "areaCode": "wat" },
     "markham": { "placeCode": "mar", "areaCode": "mar" },
     "mississauga": { "placeCode": "mis", "areaCode": "mis" },
     "north york": { "placeCode": "nyk", "areaCode": "nyk" },
@@ -198,7 +198,7 @@ function parsePost(text, updatedTime) {
     // }
 
     var textWoBrackets = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
-    var matchedRoutes = matchWithLexicon(textWoBrackets, "#place#( ?- ?| ?> ?| ?-*> ?| to )#place#", 'i', 0);
+    var matchedRoutes = matchWithLexicon(textWoBrackets, " #place#( ?- ?| ?> ?| ?-*> ?| to )#place# ", 'i', 0);
     if (matchedRoutes.length == 0) {
     	return;
     }

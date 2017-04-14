@@ -52,21 +52,26 @@ function loadFeed(url, _callback) {
 function processData(response) {
     var post = response.data[Math.floor(Math.random() * 24)];
 
+    var postLink = "https://www.facebook.com/" + post.id.replace(/_/, "/posts/");
+
     var message = post.message.replace(/(\r\n|\n|\r)/gm, " "); // remove \n
     message = message.replace(/([\uE000-\uF8FF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDDFF])/g, '') // remove emoji
 
     var updatedTime = post.updated_time;
 
+
     var posts = [{
         "message": "Looking for a ride from Scarbrough to Waterloo Friday afternoon.",
-        "updatedTime": "2017-04-13T18:35:33+0000"
+        "updatedTime": "2017-04-13T18:35:33+0000",
+        "link" : ""
     }];
     posts = [];
 
 
     posts.push({
         "message": message,
-        "updatedTime": updatedTime
+        "updatedTime": updatedTime,
+        "link": postLink
     });
 
     posts.forEach(function(post) {
@@ -84,23 +89,7 @@ function processData(response) {
 
                 var date = new Date(data.date);
                 // user-friendly time
-                var timeString;
-                var hour = date.getHours();
-                var am = true;
-                if (hour >= 12) {
-                    am = false;
-                    if (hour > 12) {
-                        hour -= 12;
-                    }
-                }
-                if (hour == 0) {
-                    hour = 12;
-                }
-                timeString = hour + ":" + ("0" + date.getMinutes()).slice(-2) + (am ? " AM" : " PM");
-
-                if (timeString == "12:00 AM") {
-                    timeString = "N/A";
-                }
+                var timeStr = getTimeStr(date);
 
                 var $scope = $('body').scope();
                 if (!$scope.carpoolRecords) {
@@ -117,9 +106,10 @@ function processData(response) {
                         "destinationCode": route.dest_area,
                         "dateRaw": data.date,
                         "date": MONTHS[date.getMonth()] + " " + date.getDate(),
-                        "time": timeString,
+                        "time": timeStr,
                         "day": DAYS[date.getDay()],
-                        "price": data.price
+                        "price": data.price,
+                        "link": postLink
                     };
                     $scope.carpoolRecords.push(post);
                 });
@@ -159,3 +149,25 @@ var app = angular.module("myApp", []);
 app.controller("myCtrl", function($scope) {
 
 });
+
+function getTimeStr(date) {
+    var timeString;
+    var hour = date.getHours();
+    var am = true;
+    if (hour >= 12) {
+        am = false;
+        if (hour > 12) {
+            hour -= 12;
+        }
+    }
+    if (hour == 0) {
+        hour = 12;
+    }
+    timeString = hour + ":" + ("0" + date.getMinutes()).slice(-2) + (am ? " AM" : " PM");
+
+    if (timeString == "12:00 AM") {
+        timeString = "N/A";
+    }
+
+    return timeString;
+}
