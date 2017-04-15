@@ -197,13 +197,13 @@ function parsePost(text, updatedTime) {
     //     origins = ['uw'];
     // }
 
-    var textWoBrackets = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
-    var matchedRoutes = matchWithLexicon(textWoBrackets, " #place#( ?- ?| ?> ?| ?-*> ?| to )#place# ", 'i', 0);
-    if (matchedRoutes.length == 0) {
-    	return;
+    var textWoBrackets = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, ""); // remove punctuations
+    var parsedRoutes = parseRoute(textWoBrackets);
+    if (parsedRoutes.length == 0) {
+        return;
     }
 
-    var matchedRoute = matchedRoutes[0]; // currently only support 1 route
+    var matchedRoute = parsedRoutes[0]; // currently only support 1 route
 
     var newRoute = {
         "origin_area": matchedRoute[0].areaCode,
@@ -355,37 +355,53 @@ function placeCodeLvlComp(pc1, pc2) {
     return placeLvlDict[pc2] - placeLvlDict[pc1];
 }
 
-// var myMatch = matchWithLexicon("waterloo -> toronto; toronto -> mississauga; stc->finch", "#place#( ?- ?| ?> ?| ?-*> ?| to )#place#", 'i', 0);
+// var myMatch = parseRoute("waterloo -> toronto");
 // console.log(myMatch);
-function matchWithLexicon(src, regExpStr, options, recurCount) {
+function parseRoute(str) {
+    return parseRouteRecur(str, "(^#place#| #place#)( ?- ?| ?> ?| ?-*> ?| to )(#place#$|#place# )", 'i', 0);
+}
+
+function parseRouteRecur(str, regExpStr, options, recurCount) {
     var tag = regExpStr.match(/#[^#]+#/);
     tag = tag ? tag[0] : null;
-    switch (tag) {
-        case "#place#":
-            var routes = [];
-            for (var key in places) {
-                var matchResult = matchWithLexicon(src, regExpStr.replace(/#[^#]+#/, key), options, recurCount + 1);
-                if (matchResult) {
-                    matchResult.unshift(places[key]);
-                    if (recurCount == 0) {
-                        routes.push(matchResult);
-                    } else {
-                        return matchResult;
-                    }
+    if (tag && tag == "#place#") {
+        var routes = [];
+        for (var key in places) {
+            try {
+                var resBeforeTag = regExpStr.substring(0, regExpStr.match(new RegExp(tag), 'g').index); // regular expression string before the tag
+                // match the stuff before the tag first, if it's a fail then no need to try the other tags
+                if (!str.match(new RegExp(resBeforeTag, options))) {
+                    return null;
+                }
+            } catch (err) {
+
+            }
+
+            // replace two places together (hardcoded for regExpStr)
+            var newRes = regExpStr.replace(/#[^#]+#/, key).replace(/#[^#]+#/, key);
+            var matchResult = parseRouteRecur(str, newRes, options, recurCount + 1);
+            if (matchResult) {
+                matchResult.unshift(places[key]);
+                if (recurCount == 0) {
+                    routes.push(matchResult);
+                } else {
+                    return matchResult;
                 }
             }
-            if (recurCount == 0) {
-                routes.sort(function(r1, r2) {
-                    return r1[r1.length - 1] - r2[r2.length - 1];
-                }).map(function(r) {
-                    return r.splice(-1, 1);
-                });
-                return routes;
-            }
-            break;
-        default:
-            var matchResult = src.match(new RegExp(regExpStr, options));
-            return matchResult ? [matchResult.index] : null;
+        }
+        if (recurCount == 0) {
+            routes.sort(function(r1, r2) {
+                // sort by their matched indicies
+                return r1[r1.length - 1] - r2[r2.length - 1];
+            }).map(function(r) {
+                // remove matched indicies
+                return r.splice(-1, 1);
+            });
+            return routes;
+        }
+    } else {
+        var matchResult = str.match(new RegExp(regExpStr, options));
+        return matchResult ? [matchResult.index] : null; // save matched index for sorting
     }
     return null;
 }
