@@ -1,8 +1,7 @@
-var stringMatchTol = 0.9;
+var LEVENSHTEIN_MATCH_RATIO = 0.1;
 
 var express = require('express');
 var app = express();
-
 var natural = require('natural');
 var nlp = require('compromise');
 var sugar = require('sugar');
@@ -10,10 +9,10 @@ var sugar = require('sugar');
 var wpTokenizer = new natural.WordPunctTokenizer();
 var tokenizer = new natural.WordTokenizer();
 
-var postTypeClassifier = new natural.BayesClassifier();
-postTypeClassifier.addDocument('driving', 'offer');
-postTypeClassifier.addDocument('looking for', 'request');
-postTypeClassifier.train();
+// var postTypeClassifier = new natural.BayesClassifier();
+// postTypeClassifier.addDocument('driving', 'offer');
+// postTypeClassifier.addDocument('looking for', 'request');
+// postTypeClassifier.train();
 
 var places = {
     "bk": { "placeCode": "bk", "areaCode": "wat" },
@@ -34,7 +33,6 @@ var places = {
     "north york": { "placeCode": "nyk", "areaCode": "nyk" },
     "pacific mall": { "placeCode": "pml", "areaCode": "mar" },
     "pmall": { "placeCode": "pml", "areaCode": "mar" },
-    "p-mall": { "placeCode": "pml", "areaCode": "mar" },
     "pearson": { "placeCode": "yyz", "areaCode": "yyz" },
     "richmond hill": { "placeCode": "ric", "areaCode": "ric" },
     "rhill": { "placeCode": "ric", "areaCode": "ric" },
@@ -42,6 +40,9 @@ var places = {
     "scarborough town centre": { "placeCode": "stc", "areaCode": "sca" },
     "stc": { "placeCode": "stc", "areaCode": "sca" },
     "sheppard yonge": { "placeCode": "she", "areaCode": "nyk" },
+    "sheppard / yonge": { "placeCode": "she", "areaCode": "nyk" },
+    "yonge sheppard": { "placeCode": "she", "areaCode": "nyk" },
+    "yonge / sheppard": { "placeCode": "she", "areaCode": "nyk" },
     "sq1": { "placeCode": "sq1", "areaCode": "mis" },
     "square one": { "placeCode": "sq1", "areaCode": "mis" },
     "toronto": { "placeCode": "trt", "areaCode": "trt" },
@@ -50,10 +51,28 @@ var places = {
     "university of waterloo": { "placeCode": "uw", "areaCode": "wat" },
     "uw": { "placeCode": "uw", "areaCode": "wat" },
     "uwaterloo": { "placeCode": "uw", "areaCode": "wat" },
-    "vaughan": { "placeCode": "vau", "areaCode": "vau" },
+    "vaughan": { "placeCode": "vgn", "areaCode": "vgn" },
     "waterloo": { "placeCode": "wat", "areaCode": "wat" },
     "yorkdale": { "placeCode": "ykd", "areaCode": "nyk" }
 };
+
+var defaultOrigins = ["uwaterloo"];
+
+var placeComponents = {};
+for (var key in places) {
+    var myPlaceComponents = key.split(" ");
+    if (myPlaceComponents.length > 1) {
+        for (var i = 0; i < myPlaceComponents.length - 1; i++) {
+            var myPlaceComponent = myPlaceComponents.slice(0, i + 1).join(" ");
+            placeComponents[myPlaceComponent] = true;
+        }
+    }
+}
+
+var routePlaceLexicon = {};
+for (var key in places) {
+    routePlaceLexicon[key] = "RoutePlace";
+}
 
 var placeLvlDict = {
     "bk": 4,
@@ -73,7 +92,7 @@ var placeLvlDict = {
     "trt": 2,
     "uni": 4,
     "uw": 4,
-    "vau": 3,
+    "vgn": 3,
     "wat": 3,
     "ykd": 4,
     "yyz": 4
@@ -97,16 +116,11 @@ var placeNameDict = {
     "trt": "Toronto",
     "uni": "Union Station",
     "uw": "University of Waterloo",
-    "vau": "Vaughan",
+    "vgn": "Vaughan",
     "wat": "Waterloo",
     "ykd": "Yorkdale",
     "yyz": "Pearson Airport"
 };
-
-var routePlaceLexicon = {};
-for (var key in places) {
-    routePlaceLexicon[key] = "MyPlace";
-}
 
 var fbGeoInfoLexicon = {
     'Mississauga': "Place",
@@ -133,6 +147,7 @@ var myDayOfWeekDict = {
     'saturday': 'saturday',
     'sunday': 'sunday'
 };
+
 var myDayOfWeekLexicon = {};
 for (var key in myDayOfWeekDict) {
     myDayOfWeekLexicon[key] = "MyDayOfWeek";
@@ -140,7 +155,7 @@ for (var key in myDayOfWeekDict) {
 
 var dateRegExp = /(jan|feb|mar|apr|may|jun|jul|aug|sept|oct|nov|dec|january|febuary|march|april|june|july|august|september|october|november|december) ?[0-9]{1,2}/i;
 var dayOfWeekRegExp = / (mon|tue|wed|thu|fri|sat|sun|monday|tuesday|wednesday|thursday|friday|saturday|sunday) /ig;
-var punctuRegExp = /(\/|\(|\))/g;
+// var punctuRegExp = /(\/|\(|\))/g;
 
 // var text = "Looking for Waterloo to Square One on wed tonight at 8:30 $10 - Waterloo, Ontario";
 // console.log(getTimeStr(text));
@@ -197,22 +212,20 @@ function parsePost(text, updatedTime) {
     //     origins = ['uw'];
     // }
 
-    var textWoBrackets = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, ""); // remove punctuations
-    var parsedRoutes = parseRoute(textWoBrackets);
-    if (parsedRoutes.length == 0) {
+    var parsedRoutes = parseRoute(text);
+    if (!parsedRoutes || parsedRoutes.length == 0) {
         return;
     }
 
-    var matchedRoute = parsedRoutes[0]; // currently only support 1 route
+    // var matchedRoute = parsedRoutes[0]; // currently only support 1 route
 
-    var newRoute = {
-        "origin_area": matchedRoute[0].areaCode,
-        "dest_area": matchedRoute[1].areaCode,
-        "origin_locs": [placeNameDict[matchedRoute[0].placeCode]],
-        "dest_locs": [placeNameDict[matchedRoute[1].placeCode]],
-    };
-    var routes = [newRoute];
-
+    // var newRoute = {
+    //     "origin_area": matchedRoute[0].areaCode,
+    //     "dest_area": matchedRoute[1].areaCode,
+    //     "origin_locs": [placeNameDict[matchedRoute[0].placeCode]],
+    //     "dest_locs": [placeNameDict[matchedRoute[1].placeCode]],
+    // };
+    var routes = parsedRoutes;
 
     // possible fb geo info hiding in dest part, need to find it first
     // var destTextTokens = wpTokenizer.tokenize(destText);
@@ -355,56 +368,271 @@ function placeCodeLvlComp(pc1, pc2) {
     return placeLvlDict[pc2] - placeLvlDict[pc1];
 }
 
-// var myMatch = parseRoute("waterloo -> toronto");
-// console.log(myMatch);
+var myMatch = parseRoute("Offering carpool - Sunday Apr. 16 Waterloo->Toronto DT at 7:30pm $15 - University of Waterloo  Pickup: UW plaza BK (leaving at 7:30 pm) Dropoff: King Subway Station  BMW SUV (2015 new car) + many years of G license  Text at 2268086656 (Do NOT inbox as I won't be able to check)");
+console.log(myMatch);
+// TODO: fb geo
 function parseRoute(str) {
-    return parseRouteRecur(str, "(^#place#| #place#)( ?- ?| ?> ?| ?-*> ?| to )(#place#$|#place# )", 'i', 0);
+    var fbGeoRegExp = / - \S+, \S+/;
+    var matchedFbGeoStr = str.match(fbGeoRegExp);
+    var matchedFbGeoNlp = nlp(matchedFbGeoStr, fbGeoInfoLexicon).match("#Place").data();
+    if (matchedFbGeoNlp.length == 2) { // match found
+        str = str.replace(fbGeoRegExp, "");
+    }
+    // console.log(str);
+
+    var removePuncRegExp = /[.,#!$%\^\*;:{}=_`~\(\)]/g;
+    var multipleWhitespacesRegExp = / +/g;
+
+    var acceptedPunc = "-<>\/ ";
+    var acceptedPuncRegExp = "[" + acceptedPunc + "]";
+    var nonAcceptedPuncRegExp = "[^" + acceptedPunc + "]";
+
+    var spaceBeforePuncRegExp = new RegExp(nonAcceptedPuncRegExp + "(?=" + acceptedPuncRegExp + ")", "g");
+    var spaceAfterPuncRegExp = new RegExp(acceptedPuncRegExp + "(?=" + nonAcceptedPuncRegExp + ")", "g");
+
+    str = str.replace(removePuncRegExp, " "); // remove unwatned punctuations
+    str = str.replace(spaceBeforePuncRegExp, "$& ").replace(spaceAfterPuncRegExp, "$& ");
+    str = str.replace(multipleWhitespacesRegExp, " "); // reduce multiple whitepsaces to 1
+    var tokens = str.split(" ");
+    // console.log(tokens);
+
+    console.log(str);
+
+
+    // console.log(nlpPlaces);
+
+    // find #To using regex
+    // var toTags = [];
+    var toRegex = /(-*>|-| to )/i;
+
+    // split str into origins and dests (one route only)
+    var strClauses = str.split(toRegex);
+    var fromClause = strClauses[0];
+    var toClause = strClauses[2];
+    console.log(fromClause);
+    console.log(toClause);
+
+    // find places using nlp match
+    var getNlpMatchNormal = function(matchedPlace) {
+        return matchedPlace.normal;
+    }
+    var origins = nlp(fromClause, routePlaceLexicon).match("#RoutePlace").data().map(getNlpMatchNormal);
+    var dests = nlp(toClause, routePlaceLexicon).match("#RoutePlace").data().map(getNlpMatchNormal);
+
+
+    // var strFirstDest = strToClause.match(/\S+/)[0];
+    // var nlpFirstDestIdx = nlpPlaces.indexOf(strFirstDest.toLowerCase());
+    // var origins = nlpPlaces.slice(0, nlpFirstDestIdx);
+    // var dests = nlpPlaces.slice(nlpFirstDestIdx);
+
+
+
+
+    // unusedPlaces = [],
+    //     placeComponentBuffer = [],
+    //     origins = [],
+    //     dests = [];
+    // placeTypeExpecting = 0; // 0 - nothing, 1 - origin, 2- dest
+    // tokens.forEach(function(token) {
+    //     parseToken(token);
+    // });
+
+    if (dests.length == 0) {
+        return;
+    }
+    if (origins.length == 0) {
+        origins = defaultOrigins;
+    }
+    // console.log(origins);
+    // console.log(dests);
+
+    var getPlaceByPlaceCodeFn = function(placeCode) {
+        return places[placeCode];
+    };
+
+    origins = origins.map(getPlaceByPlaceCodeFn);
+    dests = dests.map(getPlaceByPlaceCodeFn);
+
+    var getPlaceAreaCodeFn = function(place) {
+        return place.areaCode;
+    };
+    var originAreas = removeDuplicatesBy(origins, getPlaceAreaCodeFn);
+    var destAreas = removeDuplicatesBy(dests, getPlaceAreaCodeFn);
+    // console.log(originAreas);
+    // console.log(destAreas);
+
+    var routes = [];
+    originAreas.forEach(function(originArea) {
+        destAreas.forEach(function(destArea) {
+            if (originArea == destArea) {
+                return;
+            }
+
+            var originPlace = getMostSpecifcPlaceOfArea(origins, originArea);
+            var destPlace = getMostSpecifcPlaceOfArea(dests, destArea);
+            routes.push({
+                "originArea": originPlace.areaCode,
+                "originPlace1": placeNameDict[originPlace.placeCode],
+                "originPlace2": originPlace.placeCode == originPlace.areaCode ? "" : placeNameDict[originPlace.areaCode],
+                "destArea": destPlace.areaCode,
+                "destPlace1": placeNameDict[destPlace.placeCode],
+                "destPlace2": destPlace.placeCode == destPlace.areaCode ? "" : placeNameDict[destPlace.areaCode],
+            });
+        });
+    });
+
+    return routes;
 }
 
-function parseRouteRecur(str, regExpStr, options, recurCount) {
-    var tag = regExpStr.match(/#[^#]+#/);
-    tag = tag ? tag[0] : null;
-    if (tag && tag == "#place#") {
-        var routes = [];
-        for (var key in places) {
-            try {
-                var resBeforeTag = regExpStr.substring(0, regExpStr.match(new RegExp(tag), 'g').index); // regular expression string before the tag
-                // match the stuff before the tag first, if it's a fail then no need to try the other tags
-                if (!str.match(new RegExp(resBeforeTag, options))) {
-                    return null;
-                }
-            } catch (err) {
-
-            }
-
-            // replace two places together (hardcoded for regExpStr)
-            var newRes = regExpStr.replace(/#[^#]+#/, key).replace(/#[^#]+#/, key);
-            var matchResult = parseRouteRecur(str, newRes, options, recurCount + 1);
-            if (matchResult) {
-                matchResult.unshift(places[key]);
-                if (recurCount == 0) {
-                    routes.push(matchResult);
-                } else {
-                    return matchResult;
-                }
-            }
-        }
-        if (recurCount == 0) {
-            routes.sort(function(r1, r2) {
-                // sort by their matched indicies
-                return r1[r1.length - 1] - r2[r2.length - 1];
-            }).map(function(r) {
-                // remove matched indicies
-                return r.splice(-1, 1);
-            });
-            return routes;
-        }
+// var unusedPlaces, placeComponentBuffer, origins, dests, placeTypeExpecting;
+function parseToken(token) {
+    var newPlaceComponent = (placeComponentBuffer.length != 0 ? placeComponentBuffer.join(" ") + " " : "") + token;
+    if (isTokenPlaceComponent(newPlaceComponent)) {
+        placeComponentBuffer.push(token);
     } else {
-        var matchResult = str.match(new RegExp(regExpStr, options));
-        return matchResult ? [matchResult.index] : null; // save matched index for sorting
+        // place component chain is broken, try matching place in the order: 
+        // 1. stuff in buffer + token is a valid place
+        // 2. any combination in buffer / token alone is a valid place
+        var matchedPlace;
+        var parsingPlaceToken = placeComponentBuffer.join(" ") + " " + token;
+
+        // stuff in buffer + token
+        var macthedParsingPlace = matchTokenPlace(parsingPlaceToken);
+        if (macthedParsingPlace) {
+            matchedPlace = macthedParsingPlace;
+            placeComponentBuffer = [];
+        } else { // greedy match stuff in buffer
+            for (var i = placeComponentBuffer.length; i > 0; i--) {
+                var myBufferedPlaceToken = placeComponentBuffer.slice(0, i).join(" ");
+                var myMatchedBufferedPlace = matchTokenPlace(myBufferedPlaceToken);
+                if (myMatchedBufferedPlace) {
+                    matchedPlace = myMatchedBufferedPlace;
+                    // remove matched part from buffer
+                    placeComponentBuffer.splice(0, i);
+
+                    // redo the parsing for the remainning tokens in buffer as well as the current token
+                    var redoTokens = placeComponentBuffer.slice(0, placeComponentBuffer.length);
+                    placeComponentBuffer = [];
+
+                    redoTokens.forEach(function(redoToken) {
+                        parseToken(redoToken);
+                    });
+
+                    return;
+                }
+            }
+            // no match in buffer found, clear buffer, try match current token
+            matchedPlace = matchTokenPlace(token);
+        }
+
+        if (matchedPlace) {
+            switch (placeTypeExpecting) {
+                case 0:
+                    unusedPlaces.push(matchedPlace);
+                    break;
+                case 1:
+                    origins.push(matchedPlace);
+                    break;
+                case 2:
+                    dests.push(matchedPlace);
+                    break;
+                default:
+                    break;
+            }
+        } else if (isTokenFrom(token)) {
+            placeTypeExpecting = 1;
+        } else if (isTokenTo(token)) {
+            placeTypeExpecting = 2;
+            if (origins.length == 0) {
+                origins = unusedPlaces;
+            }
+        }
+    }
+}
+
+function getMostSpecifcPlaceOfArea(myPlaces, area) {
+    myPlaces = myPlaces.filter(function(myPlace) {
+        return myPlace.areaCode == area;
+    });
+    myPlaces.sort(function(p1, p2) {
+        return placeLvlDict[p2.placeCode] - placeLvlDict[p1.placeCode];
+    })
+    return myPlaces[0];
+}
+
+function matchTokenPlace(tok) {
+    for (var key in places) {
+        if (isStringMatch(tok, key, false)) {
+            return places[key];
+        }
     }
     return null;
 }
+
+function isTokenPlaceComponent(tok) {
+    return placeComponents[tok] ? true : false;
+}
+
+function isTokenFrom(tok) {
+    return tok.match(/^from$/i) != null;
+}
+
+function isTokenTo(tok) {
+    return tok.match(/(^-$|^-*>$|^to$)/i) != null;
+}
+
+function isStringMatch(str1, str2, caseSensitive) {
+    if (!caseSensitive) {
+        str1 = str1.toUpperCase();
+        str2 = str2.toUpperCase();
+    }
+    return (natural.LevenshteinDistance(str1, str2) / Math.max(str1.length, str2.length)) < LEVENSHTEIN_MATCH_RATIO;
+}
+
+// function parseRouteRecur(str, regExpStr, options, recurCount) {
+//     var tag = regExpStr.match(/#[^#]+#/);
+//     tag = tag ? tag[0] : null;
+//     if (tag && tag == "#place#") {
+//         var routes = [];
+//         for (var key in places) {
+//             try {
+//                 var resBeforeTag = regExpStr.substring(0, regExpStr.match(new RegExp(tag), 'g').index); // regular expression string before the tag
+//                 // match the stuff before the tag first, if it's a fail then no need to try the other tags
+//                 if (!str.match(new RegExp(resBeforeTag, options))) {
+//                     return null;
+//                 }
+//             } catch (err) {
+
+//             }
+
+//             // replace two places together (hardcoded for regExpStr)
+//             var newRes = regExpStr.replace(/#[^#]+#/, key).replace(/#[^#]+#/, key);
+//             var matchResult = parseRouteRecur(str, newRes, options, recurCount + 1);
+//             if (matchResult) {
+//                 matchResult.unshift(places[key]);
+//                 if (recurCount == 0) {
+//                     routes.push(matchResult);
+//                 } else {
+//                     return matchResult;
+//                 }
+//             }
+//         }
+//         if (recurCount == 0) {
+//             routes.sort(function(r1, r2) {
+//                 // sort by their matched indicies
+//                 return r1[r1.length - 1] - r2[r2.length - 1];
+//             }).map(function(r) {
+//                 // remove matched indicies
+//                 return r.splice(-1, 1);
+//             });
+//             return routes;
+//         }
+//     } else {
+//         var matchResult = str.match(new RegExp(regExpStr, options));
+//         return matchResult ? [matchResult.index] : null; // save matched index for sorting
+//     }
+//     return null;
+// }
 
 // console.log(getDateStr("Looking for a ride from Scarbrough/STC to Waterloo Friday afternoon."));
 function getDateStr(text, updatedTime) {

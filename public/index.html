@@ -22,7 +22,30 @@
 </head>
 
 <body ng-app="myApp" ng-controller="myCtrl">
-    <img class="logo" src="/assets/logo.svg" alt="logo" />
+    <div>
+        <img class="logo" src="/assets/logo.svg" alt="logo" />
+        <form class="form" action="/action_page.php">
+            <div class="select-container">
+            <select class="select">
+                <option selected disabled>From</option>
+                <option value="volvo">Volvo</option>
+                <option value="saab">Saab</option>
+                <option value="fiat">Fiat</option>
+                <option value="audi">Audi</option>
+            </select>
+            </div>
+            <div class="select-container">
+            <select class="select">
+                <option selected disabled>To</option>
+                <option value="volvo">Volvo</option>
+                <option value="saab">Saab</option>
+                <option value="fiat">Fiat</option>
+                <option value="audi">Audi</option>
+            </select>
+            </div>
+            <input class="select-submit" type="submit">
+        </form>
+    </div>
     <div class="carpool-list-container">
         <div class="carpool-cell-container" ng-repeat="carpoolRecord in carpoolRecords">
             <label class="carpool-price-title">{{carpoolRecord.price}}</label>
@@ -36,9 +59,9 @@
                             <br/>{{carpoolRecord.originLine2}}</label>
                     </div>
                     <div class="carpool-location-container">
-                        <label class="carpool-location-title">{{carpoolRecord.destinationCode}}</label>
-                        <label class="carpool-location-subtitle">{{carpoolRecord.destinationLine1}}
-                            <br/>{{carpoolRecord.destinationLine2}}</label>
+                        <label class="carpool-location-title">{{carpoolRecord.destCode}}</label>
+                        <label class="carpool-location-subtitle">{{carpoolRecord.destLine1}}
+                            <br/>{{carpoolRecord.destLine2}}</label>
                     </div>
                 </div>
             </div>

@@ -50,42 +50,30 @@ function loadFeed(url, _callback) {
 }
 
 function processData(response) {
-    var post = response.data[Math.floor(Math.random() * 24)];
+    var posts = response.data;
 
-    var postLink = "https://www.facebook.com/" + post.id.replace(/_/, "/posts/");
-
-    var message = post.message.replace(/(\r\n|\n|\r)/gm, " "); // remove \n
-    message = message.replace(/([\uE000-\uF8FF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDDFF])/g, '') // remove emoji
-
-    var updatedTime = post.updated_time;
-
-
-    var posts = [{
-        "message": "Looking for a ride from Scarbrough to Waterloo Friday afternoon.",
-        "updatedTime": "2017-04-13T18:35:33+0000",
-        "link" : ""
-    }];
-    posts = [];
-
-
-    posts.push({
-        "message": message,
-        "updatedTime": updatedTime,
-        "link": postLink
-    });
+    // posts.push({
+    //     "message": message,
+    //     "updatedTime": updatedTime,
+    //     "link": postLink
+    // });
 
     posts.forEach(function(post) {
-        console.log(post);
+        var postLink = "https://www.facebook.com/" + post.id.replace(/_/, "/posts/");
+
+        var message = post.message.replace(/(\r\n|\n|\r)/gm, " "); // remove \n
+        message = message.replace(/[^\x00-\x7F]/g, ""); // remove non ascii
+
+        console.log(message);
 
         $.ajax(HOST_NAME + 'process', {
             dataType: 'json',
             headers: {
-                'text': post.message,
-                'time': post.updatedTime
+                'text': message,
+                'time': post.updated_time
             },
             success: function(response) {
                 var data = response.data;
-                console.log(data);
 
                 var date = new Date(data.date);
                 // user-friendly time
@@ -98,12 +86,12 @@ function processData(response) {
 
                 data.routes.forEach(function(route) {
                     var post = {
-                        "originLine1": route.origin_locs[0],
-                        "originLine2": route.origin_locs[1] ? route.origin_locs[1] : "",
-                        "originCode": route.origin_area,
-                        "destinationLine1": route.dest_locs[0],
-                        "destinationLine2": route.dest_locs[1] ? route.dest_locs[1] : "",
-                        "destinationCode": route.dest_area,
+                        "originCode": route.originArea,
+                        "originLine1": route.originPlace1,
+                        "originLine2": route.originPlace2,
+                        "destCode": route.destArea,
+                        "destLine1": route.destPlace1,
+                        "destLine2": route.destPlace2,
                         "dateRaw": data.date,
                         "date": MONTHS[date.getMonth()] + " " + date.getDate(),
                         "time": timeStr,
@@ -114,26 +102,26 @@ function processData(response) {
                     $scope.carpoolRecords.push(post);
                 });
 
-                $scope.carpoolRecords.sort(function(p1, p2) {
-                    if (p1.originCode == p2.originCode) {
-                        if (p1.destinationCode == p2.destinationCode) {
-                            if (p1.dateRaw == p2.dateRaw) {
-                                return false;
-                            } else {
-                                return p1.dateRaw > p2.dateRaw;
-                            }
-                        } else {
-                            return p1.destinationCode > p2.destinationCode;
-                        }
-                    } else {
-                        return p1.originCode > p2.originCode;
-                    }
-                });
+                // $scope.carpoolRecords.sort(function(p1, p2) {
+                //     if (p1.originCode == p2.originCode) {
+                //         if (p1.destinationCode == p2.destinationCode) {
+                //             if (p1.dateRaw == p2.dateRaw) {
+                //                 return false;
+                //             } else {
+                //                 return p1.dateRaw > p2.dateRaw;
+                //             }
+                //         } else {
+                //             return p1.destinationCode > p2.destinationCode;
+                //         }
+                //     } else {
+                //         return p1.originCode > p2.originCode;
+                //     }
+                // });
 
                 $scope.$apply();
             },
             error: function(response) {
-                console.log(response);
+                // console.log(response);
             }
         });
     });

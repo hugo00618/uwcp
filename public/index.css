@@ -5,7 +5,7 @@ body {
     -webkit-overflow-scrolling: touch;
 }
 
-label {
+* {
     font-family: 'Raleway', sans-serif;
 }
 
@@ -16,6 +16,56 @@ label {
     top: 0;
     left: 0;
     z-index: 1;
+}
+
+.form {
+    margin-bottom: 32px;
+}
+
+.select-container {
+    position: relative;
+    margin-bottom: 16px;
+}
+
+.select-container:before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 0;
+    border: 2px solid #3A506B;
+    border-radius: 2px;
+    margin: auto;
+    width: 75%;
+    max-width: 600px;
+    font-size: 1.125rem;
+    font-weight: 400;
+    color: #9f9f9f;
+    height: 32px;
+}
+
+.select {
+    display: block;
+    opacity: 0;
+    margin: auto;
+    width: 75%;
+    max-width: 600px;
+    height: 32px;
+}
+
+.select-submit {
+    display: block;
+    border: 2px solid #3A506B;
+    border-radius: 2px;
+    margin: auto;
+    margin-top: 6px;
+    width: 75%;
+    max-width: 600px;
+    font-size: 1.125rem;
+    font-weight: 400;
+    color: #fff;
+    background-color: #3A506B;
+    height: 32px;
 }
 
 .logo {
