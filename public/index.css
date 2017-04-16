@@ -18,7 +18,65 @@ body {
     z-index: 1;
 }
 
+.loading-spinner {
+  border: 3px solid #eee;
+  border-radius: 50%;
+  border-top: 3px solid #3A506B;
+  width: 36px;
+  height: 36px;
+  -webkit-animation: spin 1.5s linear infinite;
+  animation: spin 1.5s linear infinite;
+  margin: auto;
+}
+
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.button {
+    display: none;
+    margin: auto;
+    text-align: center;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    border: 2px solid #3A506B;
+    border-radius: 2px;
+    width: 75%;
+    padding: 0;
+    max-width: 600px;
+    font-size: 1.125rem;
+    font-weight: 400;
+    color: #3A506B;
+    height: 32px;
+    background-color: #fff;
+}
+
+.button:focus {
+    /*outline: none;*/
+}
+
+.button > * {
+    vertical-align: middle;
+}
+
+.button-facebook-logo {
+    width: 20px;
+    margin-right: 6px;
+}
+
+.button-label {
+    line-height: 28px;
+}
+
 .form {
+    display: none;
     margin-bottom: 32px;
 }
 
@@ -28,7 +86,11 @@ body {
 }
 
 .select-container:before {
-    content: '';
+    content: attr(data-content);
+    padding: 0 10px;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
@@ -41,7 +103,9 @@ body {
     font-size: 1.125rem;
     font-weight: 400;
     color: #9f9f9f;
+    background-color: #fff;
     height: 32px;
+    line-height: 28px;
 }
 
 .select {
@@ -53,18 +117,38 @@ body {
     height: 32px;
 }
 
-.select-submit {
-    display: block;
+.select-submit-container {
+    position: relative;
+    margin-top: 6px;
+}
+
+.select-submit-container:before {
+    position: absolute;
+    content: "Search";
+    text-align: center;
+    line-height: 28px;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    left: 50%;
+    transform: translateX(-50%);
     border: 2px solid #3A506B;
     border-radius: 2px;
-    margin: auto;
-    margin-top: 6px;
     width: 75%;
     max-width: 600px;
     font-size: 1.125rem;
     font-weight: 400;
     color: #fff;
+    height: 32px;
     background-color: #3A506B;
+}
+
+.select-submit {
+    display: block;
+    opacity: 0;
+    margin: auto;
+    width: 75%;
+    max-width: 600px;
     height: 32px;
 }
 

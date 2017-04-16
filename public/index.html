@@ -22,10 +22,17 @@
 </head>
 
 <body ng-app="myApp" ng-controller="myCtrl">
-    <div>
-        <img class="logo" src="/assets/logo.svg" alt="logo" />
-        <form class="form" action="/action_page.php">
-            <div class="select-container">
+    <img class="logo" src="/assets/logo.svg" alt="logo" />
+
+    <div id='loadingSpinner' class="loading-spinner"></div>
+
+    <button id="fbLoginButton" class="button">
+    <img class="button-facebook-logo" src="assets/ic_facebook_logo.svg" alt="facebook logo"/>
+    <label class="button-label">Login with Facebook</label>
+    </button>
+
+    <form id="myForm" class="form" action="/action_page.php">
+        <div class="select-container" data-content="From">
             <select class="select">
                 <option selected disabled>From</option>
                 <option value="volvo">Volvo</option>
@@ -33,8 +40,8 @@
                 <option value="fiat">Fiat</option>
                 <option value="audi">Audi</option>
             </select>
-            </div>
-            <div class="select-container">
+        </div>
+        <div class="select-container" data-content="To">
             <select class="select">
                 <option selected disabled>To</option>
                 <option value="volvo">Volvo</option>
@@ -42,10 +49,11 @@
                 <option value="fiat">Fiat</option>
                 <option value="audi">Audi</option>
             </select>
-            </div>
+        </div>
+        <div class="select-submit-container">
             <input class="select-submit" type="submit">
-        </form>
-    </div>
+        </div>
+    </form>
     <div class="carpool-list-container">
         <div class="carpool-cell-container" ng-repeat="carpoolRecord in carpoolRecords">
             <label class="carpool-price-title">{{carpoolRecord.price}}</label>

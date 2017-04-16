@@ -9,8 +9,10 @@ window.fbAsyncInit = function() {
         xfbml: true,
         version: 'v2.8'
     });
-    FB.AppEvents.logPageView();
-    fbAuthInit();
+
+    FB.getLoginStatus(fbLoginCallback);
+
+    // FB.AppEvents.logPageView();
 };
 
 (function(d, s, id) {
@@ -24,24 +26,27 @@ window.fbAsyncInit = function() {
     fjs.parentNode.insertBefore(js, fjs);
 }(document, 'script', 'facebook-jssdk'));
 
-fbAuthInit = function() {
-    FB.login(function(response) {
-        if (response.authResponse) {
-            onloadPage();
-        } else {
-            console.log('User cancelled login or did not fully authorize.');
-        }
-    });
+var fbLoginCallback = function(response) {
+    $('#loadingSpinner').hide();
+    if (response.status == 'connected') {
+        $('#fbLoginButton').hide();
+        $('#myForm').css('display', 'block');
+    } else {
+        $('#fbLoginButton').css('display', 'block');
+    }
 }
 
+$(document).ready(function() {
+    $('#fbLoginButton').click(function() {
+        FB.login(fbLoginCallback);
+    });
+});
+
 function onloadPage() {
-    loadFeed(null, processData);
+    // loadFeed("/372772186164295/feed", processData);
 }
 
 function loadFeed(url, _callback) {
-    if (!url) {
-        url = "/372772186164295/feed";
-    }
     FB.api(
         url,
         function(response) {
