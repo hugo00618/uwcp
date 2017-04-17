@@ -31,20 +31,20 @@ var fbLoginCallback = function(response) {
     if (response.status == 'connected') {
         $('#fbLoginButton').hide();
         $('#searchForm').css('display', 'block');
+        loadFeed("/372772186164295/feed", processPosts);
     } else {
         $('#fbLoginButton').css('display', 'block');
+        FB.login(function(response) {
+            console.log("log in");
+        });
     }
 }
 
 $(document).ready(function() {
-    $('#fbLoginButton').click(function() {
-        FB.login(fbLoginCallback);
-    });
+    // $('#fbLoginButton').click(function() {
+        // FB.login(fbLoginCallback);
+    // });
 });
-
-function onloadPage() {
-    // loadFeed("/372772186164295/feed", processData);
-}
 
 function loadFeed(url, _callback) {
     FB.api(
@@ -54,7 +54,7 @@ function loadFeed(url, _callback) {
         });
 }
 
-function processData(response) {
+function processPosts(response) {
     var posts = response.data;
 
     // posts.push({

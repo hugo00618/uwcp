@@ -19,11 +19,13 @@
     <title>UW Carpool</title>
 </head>
 
-<body ng-app="myApp" ng-controller="myCtrl">
+<body class="body" ng-app="myApp" ng-controller="myCtrl">
     <img class="logo" src="/assets/logo.svg" alt="logo" />
-
+    <button id="fbLoginButton" class="button">
+    <img class="button-facebook-logo" src="assets/ic_facebook_logo.svg" alt="Facebook logo" />
+    <label class="button-label">Log in with Facebook</label>
+    </button>
     <div id='loadingSpinner' class="loading-spinner"></div>
-
     <div class="carpool-list-container">
         <div class="carpool-cell-container" ng-repeat="carpoolRecord in carpoolRecords">
             <label class="carpool-price-title">{{carpoolRecord.price}}</label>

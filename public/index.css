@@ -18,11 +18,16 @@ body {
     z-index: 1;
 }
 
+.body {
+    padding-top: 32px;
+}
+
 .logo {
     width: 40%;
     max-width: 240px;
     display: block;
-    margin: 32px auto;
+    margin: 0 auto;
+    margin-bottom: 32px;
 }
 
 .loading-spinner {
@@ -63,10 +68,6 @@ body {
     color: #3A506B;
     height: 32px;
     background-color: #fff;
-}
-
-.button:focus {
-    /*outline: none;*/
 }
 
 .button > * {
