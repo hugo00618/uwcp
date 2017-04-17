@@ -20,39 +20,48 @@
 </head>
 
 <body class="body" ng-app="myApp" ng-controller="myCtrl">
-    <img class="logo" src="/assets/logo.svg" alt="logo" />
-    <button id="fbLoginButton" class="button">
-    <img class="button-facebook-logo" src="assets/ic_facebook_logo.svg" alt="Facebook logo" />
-    <label class="button-label">Log in with Facebook</label>
+    <a href="/">
+        <img class="logo" src="/assets/logo.svg" alt="logo" />
+    </a>
+    <button id="fbLoginButton" class="row-button facebook-row-button" style="display: none">
+        <img class="button-facebook-logo" src="assets/ic_facebook_logo.svg" alt="Facebook logo" />
+        <label class="button-label">Log in with Facebook</label>
     </button>
     <div id='loadingSpinner' class="loading-spinner"></div>
-    <div class="carpool-list-container">
-        <div class="carpool-cell-container" ng-repeat="carpoolRecord in carpoolRecords">
-            <label class="carpool-price-title">{{carpoolRecord.price}}</label>
-            <div style="clear: both;"></div>
-            <div class="carpool-route-container">
-                <img class="carpool-route-arrow" src="/assets/ic_arrow_right.svg" alt="right arrow" />
-                <div class="carpool-route-table-container">
-                    <div class="carpool-location-container">
-                        <label class="carpool-location-title">{{carpoolRecord.originCode}}</label>
-                        <label class="carpool-location-subtitle">{{carpoolRecord.originLine1}}
-                            <br/>{{carpoolRecord.originLine2}}</label>
-                    </div>
-                    <div class="carpool-location-container">
-                        <label class="carpool-location-title">{{carpoolRecord.destCode}}</label>
-                        <label class="carpool-location-subtitle">{{carpoolRecord.destLine1}}
-                            <br/>{{carpoolRecord.destLine2}}</label>
+    <div ng-if="carpoolRecords">
+        <div class="carpool-list-container" ng-if="carpoolRecords.length != 0">
+            <div class="carpool-cell-container" ng-repeat="carpoolRecord in carpoolRecords">
+                <label class="carpool-price-title">{{carpoolRecord.price}}</label>
+                <div style="clear: both;"></div>
+                <div class="carpool-route-container">
+                    <img class="carpool-route-arrow" src="/assets/ic_arrow_right.svg" alt="right arrow" />
+                    <div class="carpool-route-table-container">
+                        <div class="carpool-location-container">
+                            <label class="carpool-location-title">{{carpoolRecord.originCode}}</label>
+                            <label class="carpool-location-subtitle">{{carpoolRecord.originLine1}}
+                                <br/>{{carpoolRecord.originLine2}}</label>
+                        </div>
+                        <div class="carpool-location-container">
+                            <label class="carpool-location-title">{{carpoolRecord.destCode}}</label>
+                            <label class="carpool-location-subtitle">{{carpoolRecord.destLine1}}
+                                <br/>{{carpoolRecord.destLine2}}</label>
+                        </div>
                     </div>
                 </div>
+                <div class="carpool-time-container">
+                    <label class="carpool-time-title" style="text-align: right">{{carpoolRecord.day}}</label>
+                    <label class="carpool-time-title" style="text-align: center;">{{carpoolRecord.date}}</label>
+                    <label class="carpool-time-title" style="text-align: left">{{carpoolRecord.time}}</label>
+                </div>
+                <a ng-href={{carpoolRecord.link}}>
+                    <span class="link-span"></span>
+                </a>
             </div>
-            <div class="carpool-time-container">
-                <label class="carpool-time-title" style="text-align: right">{{carpoolRecord.day}}</label>
-                <label class="carpool-time-title" style="text-align: center;">{{carpoolRecord.date}}</label>
-                <label class="carpool-time-title" style="text-align: left">{{carpoolRecord.time}}</label>
-            </div>
-            <a ng-href={{carpoolRecord.link}}>
-                <span class="link-span"></span>
-            </a>
+        </div>
+        <div ng-if="carpoolRecords.length == 0">
+            <span class="no-post-text">No Posts Found</span>
+            <a class="row-button text-button" href="/">Start a New Search</a>
+            <a class="row-button text-button" href="https://www.facebook.com/groups/372772186164295">Go to Facebook Group</a>
         </div>
     </div>
 </body>
