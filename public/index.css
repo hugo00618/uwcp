@@ -18,6 +18,13 @@ body {
     z-index: 1;
 }
 
+.logo {
+    width: 40%;
+    max-width: 240px;
+    display: block;
+    margin: 32px auto;
+}
+
 .loading-spinner {
   border: 3px solid #eee;
   border-radius: 50%;
@@ -75,14 +82,12 @@ body {
     line-height: 28px;
 }
 
-.form {
-    display: none;
-    margin-bottom: 32px;
-}
-
 .select-container {
     position: relative;
+    margin: auto;
     margin-bottom: 16px;
+    width: 75%;
+    max-width: 400px;
 }
 
 .select-container:before {
@@ -98,8 +103,7 @@ body {
     border: 2px solid #3A506B;
     border-radius: 2px;
     margin: auto;
-    width: 75%;
-    max-width: 600px;
+    width: 100%;
     font-size: 1.125rem;
     font-weight: 400;
     color: #9f9f9f;
@@ -108,18 +112,29 @@ body {
     line-height: 28px;
 }
 
+.select-container.invalid-value:before {
+    color: #f44336;
+}
+
+.select-container.has-value:before {
+    color: #3A506B;
+}
+
 .select {
+    width: 100%;
     display: block;
     opacity: 0;
     margin: auto;
-    width: 75%;
-    max-width: 600px;
     height: 32px;
 }
 
 .select-submit-container {
     position: relative;
+    margin: auto;
     margin-top: 6px;
+    width: 75%;
+    height: 32px;
+    max-width: 400px;
 }
 
 .select-submit-container:before {
@@ -134,8 +149,7 @@ body {
     transform: translateX(-50%);
     border: 2px solid #3A506B;
     border-radius: 2px;
-    width: 75%;
-    max-width: 600px;
+    width: 100%;
     font-size: 1.125rem;
     font-weight: 400;
     color: #fff;
@@ -147,16 +161,9 @@ body {
     display: block;
     opacity: 0;
     margin: auto;
-    width: 75%;
-    max-width: 600px;
-    height: 32px;
-}
-
-.logo {
-    width: 40%;
-    max-width: 320px;
-    display: block;
-    margin: 32px auto;
+    width: 100%;
+    height: 100%;
+    -webkit-appearance: none;
 }
 
 .carpool-cell-container {

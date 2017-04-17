@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js" type="text/javascript"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+    <script type="text/javascript" src="search.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Raleway:300,400" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="index.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#3a506b">
+    <meta name="apple-mobile-web-app-title" content="UW Carpool">
+    <meta name="application-name" content="UW Carpool">
+    <meta name="theme-color" content="#eeeeee">
+    <title>UW Carpool</title>
+</head>
+
+<body ng-app="myApp" ng-controller="myCtrl">
+    <img class="logo" src="/assets/logo.svg" alt="logo" />
+
+    <div id='loadingSpinner' class="loading-spinner"></div>
+
+    <div class="carpool-list-container">
+        <div class="carpool-cell-container" ng-repeat="carpoolRecord in carpoolRecords">
+            <label class="carpool-price-title">{{carpoolRecord.price}}</label>
+            <div style="clear: both;"></div>
+            <div class="carpool-route-container">
+                <img class="carpool-route-arrow" src="/assets/ic_arrow_right.svg" alt="right arrow" />
+                <div class="carpool-route-table-container">
+                    <div class="carpool-location-container">
+                        <label class="carpool-location-title">{{carpoolRecord.originCode}}</label>
+                        <label class="carpool-location-subtitle">{{carpoolRecord.originLine1}}
+                            <br/>{{carpoolRecord.originLine2}}</label>
+                    </div>
+                    <div class="carpool-location-container">
+                        <label class="carpool-location-title">{{carpoolRecord.destCode}}</label>
+                        <label class="carpool-location-subtitle">{{carpoolRecord.destLine1}}
+                            <br/>{{carpoolRecord.destLine2}}</label>
+                    </div>
+                </div>
+            </div>
+            <div class="carpool-time-container">
+                <label class="carpool-time-title" style="text-align: right">{{carpoolRecord.day}}</label>
+                <label class="carpool-time-title" style="text-align: center;">{{carpoolRecord.date}}</label>
+                <label class="carpool-time-title" style="text-align: left">{{carpoolRecord.time}}</label>
+            </div>
+            <a ng-href={{carpoolRecord.link}}>
+                <span class="link-span"></span>
+            </a>
+        </div>
+    </div>
+</body>
+
+</html>

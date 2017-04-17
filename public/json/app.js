@@ -5,6 +5,7 @@ var app = express();
 var natural = require('natural');
 var nlp = require('compromise');
 var sugar = require('sugar');
+var db = require('./db.json');
 
 var wpTokenizer = new natural.WordPunctTokenizer();
 var tokenizer = new natural.WordTokenizer();
@@ -167,11 +168,21 @@ app.get('/process', function(req, res) {
 
 
     res.send(parsePost(text, updatedTime));
-})
+});
+
+app.get('/getRoutePlaces', function(req, res) {
+    var routePlaces = db.areaCodes.map(function(areaCode) {
+        return { "code": areaCode, "name": placeNameDict[areaCode] };
+    });
+    routePlaces.sort(function(rp1, rp2) {
+        return rp1.name > rp2.name;
+    })
+    res.send(routePlaces);
+});
 
 app.listen(4000, function() {
     console.log('Example app listening on port 4000!')
-})
+});
 
 // parsePost("Carpool pls FREE - Toronto, Ontario  LOOKING for a ride from UW ---> Toronto (Finch or Sheppard Stn) tonight, anywhere in between 6pm to 7pm.", "2017-04-13T17:44:59+0000");
 function parsePost(text, updatedTime) {
@@ -368,8 +379,8 @@ function placeCodeLvlComp(pc1, pc2) {
     return placeLvlDict[pc2] - placeLvlDict[pc1];
 }
 
-var myMatch = parseRoute("Offering carpool - Sunday Apr. 16 Waterloo->Toronto DT at 7:30pm $15 - University of Waterloo  Pickup: UW plaza BK (leaving at 7:30 pm) Dropoff: King Subway Station  BMW SUV (2015 new car) + many years of G license  Text at 2268086656 (Do NOT inbox as I won't be able to check)");
-console.log(myMatch);
+// var myMatch = parseRoute("Offering carpool - Sunday Apr. 16 Waterloo->Toronto DT at 7:30pm $15 - University of Waterloo  Pickup: UW plaza BK (leaving at 7:30 pm) Dropoff: King Subway Station  BMW SUV (2015 new car) + many years of G license  Text at 2268086656 (Do NOT inbox as I won't be able to check)");
+// console.log(myMatch);
 // TODO: fb geo
 function parseRoute(str) {
     var fbGeoRegExp = / - \S+, \S+/;
