@@ -57,6 +57,11 @@ function loadFeed(url, _callback) {
 function processPosts(response) {
     var posts = response.data;
 
+    var passedVars = {};
+    window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+        passedVars[key] = value;
+    });
+
     // posts.push({
     //     "message": message,
     //     "updatedTime": updatedTime,
@@ -64,12 +69,17 @@ function processPosts(response) {
     // });
 
     posts.forEach(function(post) {
-        var postLink = "https://www.facebook.com/" + post.id.replace(/_/, "/posts/");
-
         var message = post.message.replace(/(\r\n|\n|\r)/gm, " "); // remove \n
         message = message.replace(/[^\x00-\x7F]/g, ""); // remove non ascii
 
+        var myPostIsOffer = message.match(/looking for/i) == null ? "true" : "false"
+        if (myPostIsOffer != passedVars.postIsOffer) {
+            return;
+        }
+
         console.log(message);
+
+        var postLink = "https://www.facebook.com/" + post.id.replace(/_/, "/posts/");
 
         $.ajax(HOST_NAME + 'process', {
             dataType: 'json',

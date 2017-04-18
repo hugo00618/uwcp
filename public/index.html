@@ -25,9 +25,9 @@
         <div class="form-field-container">
             <label class="form-field-title">I am</label>
             <div class="radio-container">
-                <button class="radio-button postTypeRadioButton" ng-class="{'is-checked': postType == 'offer'}" type="button" value="offer">Looking for</button><button class="radio-button postTypeRadioButton" ng-class="{'is-checked': postType == 'request'}" type="button" value="request">Driving</button>
-                <input class="my-radio-input" ng-model="postType" type="radio" name="postType" value="offer">
-                <input class="my-radio-input" ng-model="postType" type="radio" name="postType" value="request">
+                <button class="radio-button postTypeRadioButton" ng-class="{'is-checked': postIsOffer == 'true'}" type="button" value="true">Looking for</button><button class="radio-button postTypeRadioButton" ng-class="{'is-checked': postIsOffer == 'false'}" type="button" value="false">Driving</button>
+                <input class="my-radio-input" ng-model="postIsOffer" type="radio" name="postIsOffer" value="true">
+                <input class="my-radio-input" ng-model="postIsOffer" type="radio" name="postIsOffer" value="false">
             </div>
         </div>
         <div class="form-field-container">

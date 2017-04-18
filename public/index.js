@@ -2,10 +2,10 @@ var HOST_NAME = "http://localhost:4000/";
 
 var app = angular.module("myApp", []);
 app.controller("myCtrl", function($scope) {
-    $scope.postType = "offer";
+    $scope.postIsOffer = "true";
 
     $('.postTypeRadioButton').click(function() {
-        $scope.postType = $(this).attr("value");
+        $scope.postIsOffer = $(this).attr("value");
         $scope.$apply();
     })
 
@@ -27,7 +27,7 @@ app.controller("myCtrl", function($scope) {
         });
 
         if ($scope.origin != null && $scope.dest != null) {
-            window.location = window.location.origin + '/search.html?type=' + $scope.postType + '&origin=' + $scope.origin.code + '&dest=' + $scope.dest.code;
+            window.location = window.location.origin + '/search.html?postIsOffer=' + $scope.postIsOffer + '&origin=' + $scope.origin.code + '&dest=' + $scope.dest.code;
         }
     }
 });
