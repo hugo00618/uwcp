@@ -19,19 +19,32 @@
     <title>UW Carpool</title>
 </head>
 
-<body class="body" ng-app="myApp" ng-controller="myCtrl">
+<body ng-app="myApp" ng-controller="myCtrl">
     <img class="logo" src="/assets/logo.svg" alt="logo" />
-
-    <form id="searchForm" ng-submit="searchRoute()">
-        <div class="select-container selectContainer" ng-class="{'has-value': origin != null}" ng-attr-data-content="{{origin == null && 'From' || origin.name}}">
-            <select class="select" ng-model="origin" ng-options="route.name for route in routePlaces" required="required">
-            </select>
+    <form id="searchForm" class="my-form" ng-submit="searchRoute()">
+        <div class="form-field-container">
+            <label class="form-field-title">I am</label>
+            <div class="radio-container">
+                <button class="radio-button postTypeRadioButton" ng-class="{'is-checked': postType == 'offer'}" type="button" value="offer">Looking for</button><button class="radio-button postTypeRadioButton" ng-class="{'is-checked': postType == 'request'}" type="button" value="request">Driving</button>
+                <input class="my-radio-input" ng-model="postType" type="radio" name="postType" value="offer">
+                <input class="my-radio-input" ng-model="postType" type="radio" name="postType" value="request">
+            </div>
         </div>
-        <div class="select-container selectContainer" ng-class="{'has-value': dest != null}" ng-attr-data-content="{{dest == null && 'To' || dest.name}}">
-            <select class="select" ng-model="dest" ng-options="route.name for route in routePlaces" required="required">
-            </select>
+        <div class="form-field-container">
+            <label class="form-field-title formFieldTitle" ng-class="{'valid-value': origin != null}">From</label>
+            <div class="select-container selectContainer" ng-attr-data-content="{{origin.name}}">
+                <select class="select" ng-model="origin" ng-options="route.name for route in routePlaces" required="required">
+                </select>
+            </div>
         </div>
-        <div class="select-submit-container">
+        <div class="form-field-container">
+            <label class="form-field-title formFieldTitle" ng-class="{'valid-value': dest != null}">To</label>
+            <div class="select-container selectContainer" ng-attr-data-content="{{dest.name}}">
+                <select class="select" ng-model="dest" ng-options="route.name for route in routePlaces" required="required">
+                </select>
+            </div>
+        </div>
+        <div class="form-field-container select-submit-container">
             <input class="select-submit" type="submit">
         </div>
     </form>

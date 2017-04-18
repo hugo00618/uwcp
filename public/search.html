@@ -19,7 +19,7 @@
     <title>UW Carpool</title>
 </head>
 
-<body class="body" ng-app="myApp" ng-controller="myCtrl">
+<body ng-app="myApp" ng-controller="myCtrl">
     <a href="/">
         <img class="logo" src="/assets/logo.svg" alt="logo" />
     </a>
@@ -28,7 +28,7 @@
         <label class="button-label">Log in with Facebook</label>
     </button>
     <div id='loadingSpinner' class="loading-spinner"></div>
-    <div ng-if="carpoolRecords">
+    <div>
         <div class="carpool-list-container" ng-if="carpoolRecords.length != 0">
             <div class="carpool-cell-container" ng-repeat="carpoolRecord in carpoolRecords">
                 <label class="carpool-price-title">{{carpoolRecord.price}}</label>

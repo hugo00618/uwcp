@@ -15,6 +15,7 @@ var tokenizer = new natural.WordTokenizer();
 // postTypeClassifier.addDocument('looking for', 'request');
 // postTypeClassifier.train();
 
+// matching token : {placeCode, areaCode}
 var places = {
     "bk": { "placeCode": "bk", "areaCode": "wat" },
     "downtown toronto": { "placeCode": "dt", "areaCode": "trt" },
@@ -37,13 +38,16 @@ var places = {
     "pearson": { "placeCode": "yyz", "areaCode": "yyz" },
     "richmond hill": { "placeCode": "ric", "areaCode": "ric" },
     "rhill": { "placeCode": "ric", "areaCode": "ric" },
+    "sauga": { "placeCode": "mis", "areaCode": "mis" },
     "scarborough": { "placeCode": "sca", "areaCode": "sca" },
     "scarborough town centre": { "placeCode": "stc", "areaCode": "sca" },
     "stc": { "placeCode": "stc", "areaCode": "sca" },
     "sheppard yonge": { "placeCode": "she", "areaCode": "nyk" },
     "sheppard / yonge": { "placeCode": "she", "areaCode": "nyk" },
+    "sheppard and yonge": { "placeCode": "she", "areaCode": "nyk" },
     "yonge sheppard": { "placeCode": "she", "areaCode": "nyk" },
     "yonge / sheppard": { "placeCode": "she", "areaCode": "nyk" },
+    "yonge and sheppard": { "placeCode": "she", "areaCode": "nyk" },
     "sq1": { "placeCode": "sq1", "areaCode": "mis" },
     "square one": { "placeCode": "sq1", "areaCode": "mis" },
     "toronto": { "placeCode": "trt", "areaCode": "trt" },
@@ -75,6 +79,7 @@ for (var key in places) {
     routePlaceLexicon[key] = "RoutePlace";
 }
 
+// placeCode : level
 var placeLvlDict = {
     "bk": 4,
     "dt": 3,
@@ -99,6 +104,7 @@ var placeLvlDict = {
     "yyz": 4
 };
 
+// placeCode : user-friendly string
 var placeNameDict = {
     "bk": "Burger King Plaza",
     "dt": "Downtown Toronto",
@@ -414,7 +420,7 @@ function parseRoute(str) {
 
     // find #To using regex
     // var toTags = [];
-    var toRegex = /(-*>|-| to )/i;
+    var toRegex = /(-*>+|-+>*| to )/i;
 
     // split str into origins and dests (one route only)
     var strClauses = str.split(toRegex);
