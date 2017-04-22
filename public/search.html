@@ -48,7 +48,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="carpool-time-container">
+                <div class="carpool-time-container" ng-if="carpoolRecord.dateRaw != null">
                     <label class="carpool-time-title" style="text-align: right">{{carpoolRecord.day}}</label>
                     <label class="carpool-time-title" style="text-align: center;">{{carpoolRecord.date}}</label>
                     <label class="carpool-time-title" style="text-align: left">{{carpoolRecord.time}}</label>

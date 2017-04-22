@@ -190,7 +190,7 @@ app.listen(4000, function() {
     console.log('Example app listening on port 4000!')
 });
 
-// parsePost("Carpool pls FREE - Toronto, Ontario  LOOKING for a ride from UW ---> Toronto (Finch or Sheppard Stn) tonight, anywhere in between 6pm to 7pm.", "2017-04-13T17:44:59+0000");
+console.log(parsePost("DRIVING SUNDAY MONDAY  Sunday  6:00pm toronto-waterloo  8:30pm waterloo-toronto  monday  10:00am toronto-waterloo  12:30pm waterloo-toronto  pick up & drop off MARKVILLE MALL . SHEPPARD&YONGE SUBWAY STATION.FAIRVIEW MALL. UW PLAZA  TEXT: 5145786388", "2017-04-13T17:44:59+0000"));
 function parsePost(text, updatedTime) {
     // tokenize
     var textTokens = wpTokenizer.tokenize(text);
@@ -337,9 +337,13 @@ function parsePost(text, updatedTime) {
     // dateStr += date.time.hour + ":" + (date.time.minute ? date.time.minute.slice(-2) : "00");
 
     var timeStr = getTimeStr(text);
-    var dateStr = getDateStr(text, updatedTime) + " " + (timeStr ? timeStr : "");
-    console.log("date: " + dateStr);
-    var standardDate = sugar.Date.create(dateStr);
+    var dateStr = getDateStr(text, updatedTime);
+    if (dateStr != null) {
+        var combinedDateStr = dateStr + " " + (timeStr ? timeStr : "");
+        console.log("date: " + combinedDateStr);
+        var standardDate = sugar.Date.create(combinedDateStr);
+    }
+
     // var dateTokens = tokenizer.tokenize(nlp(text).match('#Date').out());
     // console.log(dateTokens);
     // for (var i = 0; i < dateTokens.length; i++) {
@@ -364,7 +368,6 @@ function parsePost(text, updatedTime) {
 
     var msg = {
         "data": {
-            "post_offering": true,
             "routes": routes,
             "date": standardDate,
             "price": price
@@ -651,7 +654,7 @@ function isStringMatch(str1, str2, caseSensitive) {
 //     return null;
 // }
 
-// console.log(getDateStr("Looking for a ride from Scarbrough/STC to Waterloo Friday afternoon."));
+// console.log(getDateStr("DRIVING SUNDAY MONDAY  Sunday  6:00pm toronto-waterloo  8:30pm waterloo-toronto  monday  10:00am toronto-waterloo  12:30pm waterloo-toronto  pick up & drop off MARKVILLE MALL . SHEPPARD&YONGE SUBWAY STATION.FAIRVIEW MALL. UW PLAZA  TEXT: 5145786388"));
 function getDateStr(text, updatedTime) {
     // exact date first
     var dateMatch = text.match(dateRegExp);
@@ -667,7 +670,11 @@ function getDateStr(text, updatedTime) {
         // currently only support one date
         if (dayOfWeekMatch.length == 1) {
             // remove extra whitespace from matching and convert to lower case
-            return myDayOfWeekDict[dayOfWeekMatch[0].replace(/ /g, "").toLowerCase()];
+            text = myDayOfWeekDict[dayOfWeekMatch[0].replace(/ /g, "").toLowerCase()];
+            if (text == "sunday" || text == "sun") {
+                text = "next " + text; // fix the problem that sugar thinks "sunday" means the passed sunday
+            }
+            return text;
         }
         return;
     }

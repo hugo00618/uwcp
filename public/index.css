@@ -250,7 +250,6 @@ body {
 .carpool-route-container {
     width: 100%;
     margin: auto;
-    margin-bottom: 14px;
     position: relative;
 }
 
@@ -292,6 +291,7 @@ body {
 .carpool-time-container {
     display: table;
     width: 100%;
+    margin-top: 14px;
     table-layout: fixed;
 }
 
