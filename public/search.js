@@ -41,9 +41,11 @@ var fbLoginCallback = function(response) {
 }
 
 $(document).ready(function() {
-    // $('#fbLoginButton').click(function() {
-        // FB.login(fbLoginCallback);
-    // });
+    $('#fbLoginButton').click(function() {
+        $('#fbLoginButton').hide();
+        $('#loadingSpinner').show();
+        FB.login(fbLoginCallback);
+    });
 });
 
 function loadFeed(url, _callback) {
